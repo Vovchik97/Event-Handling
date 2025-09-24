@@ -24,16 +24,20 @@ class BoxDrawingView @JvmOverloads constructor(
     // Текущий "рисуемый" прямоугольник
     private var currentBox: Box? = null
 
+    // Цвет по умолчанию
+    private var currentColor: Int =
+        ContextCompat.getColor(context, android.R.color.holo_blue_light)
+
     // Кисть для рисования
     private val boxPaint = Paint().apply {
-        color = ContextCompat.getColor(context, android.R.color.holo_blue_light)
+        color = currentColor
         style = Paint.Style.FILL
         alpha = 100 // прозрачность (0 = полностью прозрачный, 255 = непрозрачный)
     }
 
     // для обводки
     private val strokePaint = Paint().apply {
-        color = Color.BLUE
+        color = currentColor
         style = Paint.Style.STROKE
         strokeWidth = 4f
     }
@@ -71,7 +75,7 @@ class BoxDrawingView @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 // создаем новый прямоугольник и добавляем в список
-                currentBox = Box(current, current)
+                currentBox = Box(current, current, currentColor)
                 boxes.add(currentBox!!)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -99,14 +103,35 @@ class BoxDrawingView @JvmOverloads constructor(
                 Math.max(box.start.x, box.end.x),
                 Math.max(box.start.y, box.end.y),
             )
+
+            // Задаём цвет конкретного прямоугольника
+            boxPaint.color = box.color
+            boxPaint.alpha = 100
+
+            // Задаём цвет обводки
+            strokePaint.color = box.color
+            strokePaint.alpha = 255
+
             canvas.drawRect(rect, boxPaint)
             canvas.drawRect(rect, strokePaint)
         }
+    }
+
+    // Метод смены цвета
+    fun setBoxColor(color: Int) {
+        currentColor = color
+    }
+
+    // Метод очистки экрана
+    fun clearBoxes() {
+        boxes.clear()
+        invalidate()
     }
 }
 
 // Класс-хранилище прямоугольник
 data class Box(
     var start: PointF,
-    var end: PointF
+    var end: PointF,
+    var color: Int
 )
